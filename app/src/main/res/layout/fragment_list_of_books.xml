@@ -45,7 +45,15 @@
                   android:layout_alignParentStart="true"
                   android:layout_toRightOf="@id/searchButton"/>
 
-
+        <TextView xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/empty_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:textColor="#000000"
+            android:textStyle="bold"
+            android:text="@string/no_books"
+            android:textSize="20sp" />
 
     </RelativeLayout>
 

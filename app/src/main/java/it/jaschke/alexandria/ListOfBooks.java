@@ -22,6 +22,8 @@ import it.jaschke.alexandria.data.AlexandriaContract;
 
 public class ListOfBooks extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
+    private static final String LOG_TAG = "ListOfBooks";
+
     private BookListAdapter bookListAdapter;
     private ListView bookList;
     private int position = ListView.INVALID_POSITION;
@@ -62,6 +64,10 @@ public class ListOfBooks extends Fragment implements LoaderManager.LoaderCallbac
         );
 
         bookList = (ListView) rootView.findViewById(R.id.listOfBooks);
+        /*
+        * Added a note for when there are no books in the system
+        * */
+        bookList.setEmptyView(rootView.findViewById(R.id.empty_view));
         bookList.setAdapter(bookListAdapter);
 
         bookList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -69,8 +75,10 @@ public class ListOfBooks extends Fragment implements LoaderManager.LoaderCallbac
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
                 Cursor cursor = bookListAdapter.getCursor();
+             //   Log.v(LOG_TAG,  "Clicked on position " + position);
                 if (cursor != null && cursor.moveToPosition(position)) {
-                    ((Callback)getActivity())
+               //     Log.v(LOG_TAG, "Send to Callback " +  cursor.getString(cursor.getColumnIndex(AlexandriaContract.BookEntry._ID)).toString());
+                            ((Callback) getActivity())
                             .onItemSelected(cursor.getString(cursor.getColumnIndex(AlexandriaContract.BookEntry._ID)));
                 }
             }

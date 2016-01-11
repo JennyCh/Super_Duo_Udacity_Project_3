@@ -7,6 +7,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
+import android.widget.TextView;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -83,13 +84,16 @@ public class BookService extends IntentService {
                 null, // values for "where" clause
                 null  // sort order
         );
-
-        if(bookEntry.getCount()>0){
+        try {
+            if (bookEntry.getCount() > 0) {
+                bookEntry.close();
+                return;
+            }
             bookEntry.close();
-            return;
+        }catch(NullPointerException e){
+            e.printStackTrace();
         }
 
-        bookEntry.close();
 
         HttpURLConnection urlConnection = null;
         BufferedReader reader = null;
@@ -112,7 +116,10 @@ public class BookService extends IntentService {
             urlConnection.connect();
 
             InputStream inputStream = urlConnection.getInputStream();
-            StringBuffer buffer = new StringBuffer();
+            /*
+            No need for string buffer here, we are not doing any synchronization
+             */
+            StringBuilder stringBuilder = new StringBuilder();
             if (inputStream == null) {
                 return;
             }
@@ -120,14 +127,14 @@ public class BookService extends IntentService {
             reader = new BufferedReader(new InputStreamReader(inputStream));
             String line;
             while ((line = reader.readLine()) != null) {
-                buffer.append(line);
-                buffer.append("\n");
+                stringBuilder.append(line);
+                stringBuilder.append("\n");
             }
 
-            if (buffer.length() == 0) {
+            if (stringBuilder.length() == 0) {
                 return;
             }
-            bookJsonString = buffer.toString();
+            bookJsonString = stringBuilder.toString();
         } catch (Exception e) {
             Log.e(LOG_TAG, "Error ", e);
         } finally {
@@ -157,7 +164,14 @@ public class BookService extends IntentService {
         final String IMG_URL = "thumbnail";
 
         try {
-            JSONObject bookJson = new JSONObject(bookJsonString);
+            if(bookJsonString == null){
+               // Log.v(LOG_TAG, "No data in JSON string");
+                Intent messageIntent = new Intent(MainActivity.MESSAGE_EVENT);
+                messageIntent.putExtra(MainActivity.MESSAGE_KEY,getResources().getString(R.string.error_no_data));
+                LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(messageIntent);
+                return;
+            }
+            JSONObject bookJson = new JSONObject(bookJsonString); //Crashes here
             JSONArray bookArray;
             if(bookJson.has(ITEMS)){
                 bookArray = bookJson.getJSONArray(ITEMS);
